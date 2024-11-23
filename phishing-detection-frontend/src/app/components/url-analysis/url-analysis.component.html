@@ -1,0 +1,60 @@
+<mat-card class="url-analysis-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon class="header-icon" aria-hidden="false" aria-label="Analyze URL">link</mat-icon>
+      Analyze URL
+    </mat-card-title>
+  </mat-card-header>
+
+  <form [formGroup]="urlForm" (ngSubmit)="onSubmit()">
+    <mat-form-field class="input-field" appearance="outline">
+      <mat-label>Enter URL</mat-label>
+      <input matInput formControlName="url" placeholder="https://example.com" required />
+      <mat-error *ngIf="urlForm.get('url')?.hasError('required')">URL is required</mat-error>
+      <mat-error *ngIf="urlForm.get('url')?.hasError('pattern')">Please enter a valid URL</mat-error>
+    </mat-form-field>
+
+    <div class="action-buttons">
+      <button mat-raised-button color="primary" type="submit" [disabled]="!urlForm.valid">
+        Analyze
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="loading-spinner">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  </form>
+  
+  <div
+    *ngIf="analysisResult"
+    class="result"
+    [ngStyle]="{
+      'background-color': analysisResult.is_phishing ? '#fae0e0' : '#e0f7fa'
+    }"
+  >
+    <h3>Analysis Result:</h3>
+    <p><strong>Autoencoder Score:</strong> {{ analysisResult.autoencoder_score }}</p>
+    <p><strong>XGBoost Score:</strong> {{ analysisResult.xgboost_score }}</p>
+    <p class="detection-status">
+      <strong>Phishing Detection:</strong> 
+      <span [class.phishing]="analysisResult.is_phishing" [class.safe]="!analysisResult.is_phishing">
+        {{ analysisResult.is_phishing ? 'Phishing' : 'Safe' }}
+      </span>
+    </p>
+
+    <ngx-charts-bar-vertical
+      [view]="view"
+      [scheme]="'vivid'"
+      [results]="chartData"
+      [gradient]="false"
+      [xAxis]="true"
+      [yAxis]="true"
+      [legend]="true"
+      [showXAxisLabel]="true"
+      [showYAxisLabel]="true"
+      [xAxisLabel]="'Model'"
+      [yAxisLabel]="'Score'"
+    >
+    </ngx-charts-bar-vertical>
+  </div>
+</mat-card>

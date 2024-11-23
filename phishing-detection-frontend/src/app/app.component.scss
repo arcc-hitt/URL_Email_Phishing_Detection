@@ -1,0 +1,18 @@
+.spacer {
+    flex: 1 1 auto; // This will push the links to the right
+  }
+  
+  .footer {
+    background-color: #f1f1f1;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .footer-content {
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .active-link {
+    font-weight: bold; // Highlight active link
+  }

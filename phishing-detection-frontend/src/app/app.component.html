@@ -1,0 +1,11 @@
+<mat-toolbar color="primary">
+  <span>Phishing Detection System</span>
+  <span class="spacer"></span>
+  <a mat-button routerLink="/dashboard" routerLinkActive="active-link">Dashboard</a>
+  <a mat-button routerLink="/url-analysis" routerLinkActive="active-link">URL Analysis</a>
+  <a mat-button routerLink="/email-analysis" routerLinkActive="active-link">Email Analysis</a>
+  <a mat-button routerLink="/phishing-log" routerLinkActive="active-link">Phishing Logs</a>
+</mat-toolbar>
+
+<!-- Main content will be rendered here based on the route -->
+<router-outlet></router-outlet>

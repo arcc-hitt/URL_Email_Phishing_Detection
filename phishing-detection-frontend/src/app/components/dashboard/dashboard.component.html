@@ -1,0 +1,52 @@
+<mat-grid-list cols="3" rowHeight="2:1" gutterSize="20px" class="dashboard-grid-list">
+  <mat-grid-tile>
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon aria-hidden="false" aria-label="URL Analysis" matTooltip="Analyze a URL for phishing attacks" class="card-icon">link</mat-icon>
+          URL Phishing Analysis
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Submit a URL to detect phishing attacks.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/url-analysis">Analyze URL</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-grid-tile>
+
+  <mat-grid-tile>
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon aria-hidden="false" aria-label="Email Analysis" matTooltip="Analyze an email for phishing attacks" class="card-icon">email</mat-icon>
+          Email Phishing Analysis
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Submit an email body to detect phishing attacks.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/email-analysis">Analyze Email</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-grid-tile>
+
+  <mat-grid-tile>
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon aria-hidden="false" aria-label="Phishing Logs" matTooltip="View previous phishing logs" class="card-icon">history</mat-icon>
+          Phishing Logs
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>View logs of previous phishing detection attempts.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" routerLink="/phishing-log">View Logs</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-grid-tile>
+</mat-grid-list>

@@ -1,0 +1,98 @@
+$email-analysis-card-padding: 20px;
+
+.email-analysis-card {
+  margin: $email-analysis-card-padding;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    padding-bottom: 0;
+    mat-icon {
+      margin-right: 8px;
+      color: #1976d2;
+    }
+  }
+}
+
+.chart-card {
+  margin: $email-analysis-card-padding;
+}
+
+.email-form {
+  display: flex;
+  flex-direction: column;
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .gmail-entry {
+    h6 {
+      margin: 20px 0 10px;
+      font-weight: 600;
+      color: #444;
+    }
+    margin-top: 10px;
+    margin-bottom: 20px;
+    mat-form-field {
+      width: 100%;
+    }
+  }
+
+  .manual-entry {
+    h6 {
+      margin: 20px 0 10px;
+      font-weight: 600;
+      color: #444;
+    }
+    .manual-entry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+
+      .full-width {
+        grid-column: span 2;
+      }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}
+
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e0f7fa;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #004d40;
+  box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.detection-status {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 10px;
+
+  .phishing {
+    color: #d32f2f;
+  }
+
+  .safe {
+    color: #388e3c;
+  }
+}

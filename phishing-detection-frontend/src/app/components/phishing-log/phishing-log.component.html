@@ -1,0 +1,60 @@
+<mat-card class="phishing-log-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon aria-hidden="false">warning</mat-icon> Phishing Logs
+    </mat-card-title>
+    <mat-form-field class="search-bar" appearance="outline">
+      <mat-label>Search Logs</mat-label>
+      <input matInput placeholder="Enter search term" [(ngModel)]="searchTerm" (input)="applyFilter()" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </mat-card-header>
+
+  <mat-card-content>
+    <table mat-table [dataSource]="displayedLogs" class="mat-elevation-z8">
+
+      <!-- Input Type Column -->
+      <ng-container matColumnDef="input_type">
+        <th mat-header-cell *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let log">{{ log.input_type }}</td>
+      </ng-container>
+
+      <!-- Input Data Column -->
+      <ng-container matColumnDef="input_data">
+        <th mat-header-cell *matHeaderCellDef>Input</th>
+        <td mat-cell *matCellDef="let log">{{ log.input_data }}</td>
+      </ng-container>
+
+      <!-- Classification Result Column -->
+      <ng-container matColumnDef="classification_result">
+        <th mat-header-cell *matHeaderCellDef>Result</th>
+        <td mat-cell *matCellDef="let log">
+          <span [class.phishing]="log.classification_result === 'Phishing'">
+            {{ log.classification_result }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Created At Column -->
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef>Timestamp</th>
+        <td mat-cell *matCellDef="let log">{{ log.created_at | date: 'short' }}</td>
+      </ng-container>
+
+      <!-- Row Definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <button mat-icon-button (click)="previousPage()" [disabled]="currentPage === 1">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button mat-icon-button (click)="nextPage()" [disabled]="currentPage === totalPages">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

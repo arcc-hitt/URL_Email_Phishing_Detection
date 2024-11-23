@@ -1,0 +1,97 @@
+<mat-card class="email-analysis-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon aria-hidden="false" aria-label="Email Analysis">email</mat-icon>
+      Email Phishing Analysis
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form (ngSubmit)="onSubmit()" #emailForm="ngForm" class="email-form">
+      <div class="gmail-entry">
+        <h6>Connect Your Gmail Account</h6>
+        <div class="button-group">
+          <button mat-raised-button color="accent" type="button" (click)="connectGmail()">Connect Gmail</button>
+          <button mat-raised-button color="warn" type="button" (click)="disconnectGmail()" [disabled]="!isAuthenticated">
+            Disconnect Gmail
+          </button>
+          <button mat-raised-button color="primary" type="button" (click)="fetchAllEmails()" [disabled]="!isAuthenticated">
+            Fetch All Emails
+          </button>
+        </div>
+  
+        <mat-form-field appearance="fill" *ngIf="emailList?.length">
+          <mat-label>Select Email for Analysis</mat-label>
+          <mat-select [(value)]="selectedEmailId" (selectionChange)="onEmailSelect()">
+            <mat-option *ngFor="let email of emailList" [value]="email.id">
+              {{ email.subject }} - {{ email.date }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="manual-entry">
+        <h6>Or Enter Email Manually</h6>
+        <div class="manual-entry-grid">
+          <mat-form-field appearance="fill">
+            <mat-label>Sender</mat-label>
+            <input matInput placeholder="Enter sender email" [(ngModel)]="sender" name="sender" required />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Receiver</mat-label>
+            <input matInput placeholder="Enter receiver email" [(ngModel)]="receiver" name="receiver" required />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Date</mat-label>
+            <input matInput placeholder="Enter date" [(ngModel)]="date" name="date" required />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Subject</mat-label>
+            <input matInput placeholder="Enter email subject" [(ngModel)]="subject" name="subject" required />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Email Body</mat-label>
+            <textarea matInput placeholder="Enter email body" [(ngModel)]="body" name="body" required></textarea>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>URLs Count</mat-label>
+            <input matInput type="number" placeholder="Enter number of URLs" [(ngModel)]="urls" name="urls" required />
+          </mat-form-field>
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!emailForm.valid">Analyze Email</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div
+      *ngIf="analysisResult"
+      class="result"
+      [ngStyle]="{
+        'background-color': analysisResult.is_phishing ? '#fae0e0' : '#e0f7fa'
+      }"
+    >
+      <h3>Analysis Result:</h3>
+      <p><strong>Autoencoder Score:</strong> {{ analysisResult.autoencoder_score }}</p>
+      <p><strong>LightGBM Score:</strong> {{ analysisResult.lightgbm_score }}</p>
+      <p class="detection-status">
+        <strong>Phishing Detection:</strong> 
+        <span [class.phishing]="analysisResult.is_phishing" [class.safe]="!analysisResult.is_phishing">
+          {{ analysisResult.is_phishing ? 'Phishing' : 'Safe' }}
+        </span>
+      </p>
+      <ngx-charts-bar-vertical
+        [results]="chartData"
+        [view]="view"
+        [scheme]="'vivid'"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [xAxisLabel]="'Score'"
+        [showYAxisLabel]="true"
+        [yAxisLabel]="'Analysis Metrics'"
+      ></ngx-charts-bar-vertical>
+    </div>  
+  </mat-card-content>
+</mat-card>

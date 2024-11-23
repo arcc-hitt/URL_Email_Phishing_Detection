@@ -1,0 +1,8 @@
+{
+  "routes": [
+    "/dashboard",
+    "/email-analysis",
+    "/phishing-log",
+    "/url-analysis"
+  ]
+}
