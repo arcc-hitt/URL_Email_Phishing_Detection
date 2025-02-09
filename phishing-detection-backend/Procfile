@@ -1,1 +1,1 @@
-web: gunicorn phishing-detection-backend.app:app --bind 0.0.0.0:$PORT
+web: gunicorn app.main:app --bind 0.0.0.0:$PORT
