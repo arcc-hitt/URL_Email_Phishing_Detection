@@ -1,8 +1,8 @@
 import joblib
 import numpy as np
-from app.models.email_autoencoder_model import EmailAutoencoderModel
-from app.models.lightgbm_model import LightGBMModel
-from app.utils.feature_extraction import extract_email_features
+from models.email_autoencoder_model import EmailAutoencoderModel
+from models.lightgbm_model import LightGBMModel
+from utils.feature_extraction import extract_email_features
 from sklearn.preprocessing import MinMaxScaler
 
 class EmailService:

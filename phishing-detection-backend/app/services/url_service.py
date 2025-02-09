@@ -1,7 +1,7 @@
 import numpy as np
-from app.models.xgboost_model import XGBoostModel
-from app.models.url_autoencoder_model import URLAutoencoderModel
-from app.utils.feature_extraction import extract_url_features
+from models.xgboost_model import XGBoostModel
+from models.url_autoencoder_model import URLAutoencoderModel
+from utils.feature_extraction import extract_url_features
 from sklearn.preprocessing import MinMaxScaler
 
 class URLService:

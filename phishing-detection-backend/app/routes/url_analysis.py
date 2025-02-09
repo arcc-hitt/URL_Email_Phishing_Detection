@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.services.url_service import URLService
+from services.url_service import URLService
 
 bp = Blueprint("url_analysis", __name__)
 url_service = URLService()

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.services.email_service import EmailService
+from services.email_service import EmailService
 
 bp = Blueprint("email_analysis", __name__)
 email_service = EmailService()
