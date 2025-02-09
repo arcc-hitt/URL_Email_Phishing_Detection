@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
-from config import config  # Corrected import statement
+from config import config
 from routes import url_analysis, email_analysis
 from pymongo import MongoClient
 
@@ -45,5 +45,5 @@ def create_app():
 
 # Start the app
 app = create_app()
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=5000)
