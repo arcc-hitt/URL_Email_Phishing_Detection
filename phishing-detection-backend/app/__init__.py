@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from config import config
+from ..config import config
 from pymongo import MongoClient
 from routes import url_analysis, email_analysis
 from main import bp as logs_bp
