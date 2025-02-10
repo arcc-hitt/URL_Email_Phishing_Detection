@@ -1,8 +1,8 @@
 import datetime
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
-from config import config
-from routes import url_analysis, email_analysis
+from .config import config
+from .routes import url_analysis, email_analysis
 from pymongo import MongoClient
 
 def create_app():
