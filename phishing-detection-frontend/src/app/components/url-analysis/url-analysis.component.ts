@@ -12,6 +12,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { PhishingLogService } from '../phishing-log/phishing-log.service';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-url-analysis',
@@ -51,7 +52,7 @@ export class UrlAnalysisComponent {
     if (this.urlForm.valid) {
       const url = this.urlForm.get('url')?.value;
 
-      this.http.post<any>('http://localhost:5000/api/url/analyze', { url }).subscribe({
+      this.http.post<any>(`${environment.apiUrl}/url/analyze`, { url }).subscribe({
         next: (response) => {
           this.analysisResult = response;
           this.loading = false;

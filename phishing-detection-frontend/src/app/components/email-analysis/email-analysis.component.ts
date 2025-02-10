@@ -143,7 +143,7 @@ export class EmailAnalysisComponent implements OnInit {
   }  
 
   analyzeEmail(payload: any) {
-    this.http.post<any>('http://localhost:5000/api/email/analyze', payload).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/api/email/analyze`, payload).subscribe({
       next: (response) => {
         this.analysisResult = response;
         this.updateChartData();
