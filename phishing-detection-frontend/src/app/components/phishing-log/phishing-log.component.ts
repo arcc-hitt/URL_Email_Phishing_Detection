@@ -15,6 +15,7 @@ import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-phishing-log',
+    standalone: true,
     imports: [
         MatGridListModule,
         MatCardModule,

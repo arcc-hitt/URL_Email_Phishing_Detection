@@ -18,6 +18,7 @@ import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-email-analysis',
+    standalone: true,
     imports: [
         MatGridListModule,
         MatCardModule,

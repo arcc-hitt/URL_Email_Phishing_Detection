@@ -16,6 +16,7 @@ import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-url-analysis',
+    standalone: true,
     imports: [
         MatCardModule,
         MatFormFieldModule,
