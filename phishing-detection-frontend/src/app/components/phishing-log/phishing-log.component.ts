@@ -11,6 +11,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-phishing-log',
@@ -50,7 +51,7 @@ export class PhishingLogComponent implements OnInit {
   }
 
   loadLogs() {
-    this.http.get<any[]>('http://localhost:5000/api/phishing_logs').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`).subscribe({
       next: (data) => {
         this.logs = data;
         this.applyFilter(); // Initially apply the filter to display the first page
