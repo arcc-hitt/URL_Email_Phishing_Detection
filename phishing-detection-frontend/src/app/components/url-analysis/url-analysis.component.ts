@@ -52,7 +52,7 @@ export class UrlAnalysisComponent {
     if (this.urlForm.valid) {
       const url = this.urlForm.get('url')?.value;
 
-      this.http.post<any>(`${environment.apiUrl}/url/analyze`, { url }).subscribe({
+      this.http.post<any>(`${environment.apiUrl}/api/url/analyze`, { url }).subscribe({
         next: (response) => {
           this.analysisResult = response;
           this.loading = false;

@@ -10,7 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -51,12 +51,20 @@ export class PhishingLogComponent implements OnInit {
   }
 
   loadLogs() {
-    this.http.get<any[]>(`${environment.apiUrl}/phishing_logs`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`).subscribe({
       next: (data) => {
         this.logs = data;
         this.applyFilter(); // Initially apply the filter to display the first page
       },
-      error: (err) => console.error('Error loading logs:', err),
+      error: (err: HttpErrorResponse) => {
+        if (err.error instanceof ErrorEvent) {
+          // Client-side or network error
+          console.error('Client-side error:', err.error.message);
+        } else {
+          // Backend error
+          console.error(`Backend returned code ${err.status}, body was: ${err.error}`);
+        }
+      },
     });
   }
 
