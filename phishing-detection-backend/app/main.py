@@ -8,8 +8,15 @@ from pymongo import MongoClient
 def create_app():
     # Initialize the Flask app
     app = Flask(__name__)
-    # Configure CORS with specific settings
-    CORS(app)
+    
+    # Configure CORS globally
+    CORS(
+        app,
+        resources={r"/*": {"origins": "http://localhost:4200"}},
+        methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+        allow_headers=["Content-Type"]
+    )
+    
     app.config.from_object(config)
     mongodb_uri = app.config['MONGODB_URI']
     client = MongoClient(mongodb_uri)
@@ -17,8 +24,15 @@ def create_app():
     logs_collection = db['phishing_logs']
     bp = Blueprint('logs_api', __name__)
     
-    @bp.route('/api/phishing_logs', methods=['POST'])
+    @bp.route('/api/phishing_logs', methods=['POST', 'OPTIONS'])
     def save_log():
+        if request.method == "OPTIONS":
+            response = jsonify({"message": "CORS preflight successful"})
+            response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+            response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+            return response, 200
+
         log_data = request.json
         log_data['created_at'] = datetime.datetime.now()  # Add timestamp
         logs_collection.insert_one(log_data)
