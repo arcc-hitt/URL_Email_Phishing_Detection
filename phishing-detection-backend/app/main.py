@@ -12,7 +12,7 @@ def create_app():
     # Configure CORS globally
     CORS(
         app,
-        resources={r"/*": {"origins": "http://localhost:4200"}},
+        resources={r"/*": {"origins": ["http://localhost:4200", "https://url-email-phishing-detection.vercel.app"]}},
         methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
         allow_headers=["Content-Type"]
     )
