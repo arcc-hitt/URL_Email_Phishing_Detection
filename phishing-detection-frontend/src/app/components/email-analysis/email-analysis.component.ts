@@ -17,25 +17,24 @@ import { PhishingLogService } from '../phishing-log/phishing-log.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-email-analysis',
-  standalone: true,
-  imports: [
-    MatGridListModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatOptionModule,
-    MatSelectModule,
-    RouterModule,
-    FormsModule,
-    CommonModule,
-    HttpClientModule,
-    NgxChartsModule
-  ],
-  templateUrl: './email-analysis.component.html',
-  styleUrls: ['./email-analysis.component.scss']
+    selector: 'app-email-analysis',
+    imports: [
+        MatGridListModule,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatOptionModule,
+        MatSelectModule,
+        RouterModule,
+        FormsModule,
+        CommonModule,
+        HttpClientModule,
+        NgxChartsModule
+    ],
+    templateUrl: './email-analysis.component.html',
+    styleUrls: ['./email-analysis.component.scss']
 })
 export class EmailAnalysisComponent implements OnInit {
   sender: string = '';
