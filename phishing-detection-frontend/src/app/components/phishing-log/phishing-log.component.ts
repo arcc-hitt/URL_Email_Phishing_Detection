@@ -57,13 +57,7 @@ export class PhishingLogComponent implements OnInit {
         this.applyFilter(); // Initially apply the filter to display the first page
       },
       error: (err: HttpErrorResponse) => {
-        if (err.error && err.error.message) {
-          // Client-side or network error
-          console.error('Client-side error:', err.error.message);
-        } else {
-          // Backend error
-          console.error(`Backend returned code ${err.status}, body was: ${err.message}`);
-        }
+        console.error('Error loading logs:', err.message);
       },
     });
   }
