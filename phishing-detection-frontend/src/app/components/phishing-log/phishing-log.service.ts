@@ -8,6 +8,6 @@ export class PhishingLogService {
 
   // Add a method to save log entries to the database
   saveLog(entry: any) {
-    return this.http.post<any>(`${environment.apiUrl}/api/phishing_logs`, entry);
+    return this.http.post<any>(`${environment.apiUrl}/phishing_logs`, entry);
   }
 }

@@ -51,7 +51,7 @@ export class PhishingLogComponent implements OnInit {
   }
 
   loadLogs() {
-    this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/phishing_logs`).subscribe({
       next: (data) => {
         this.logs = data;
         this.applyFilter(); // Initially apply the filter to display the first page
