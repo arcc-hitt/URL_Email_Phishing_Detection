@@ -24,7 +24,7 @@
     "@angular/platform-server": "^19.1.5",
     "@angular/router": "^19.1.5",
     "@angular/ssr": "^19.1.6",
-    "@swimlane/ngx-charts": "^21.0.0",
+    "@swimlane/ngx-charts": "^22.0.0-alpha.0",
     "chart.js": "^4.4.4",
     "d3": "^7.9.0",
     "dotenv": "^16.4.5",
