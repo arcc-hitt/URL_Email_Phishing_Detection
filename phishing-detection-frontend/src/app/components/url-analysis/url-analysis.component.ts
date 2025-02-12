@@ -15,24 +15,23 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-url-analysis',
-  standalone: true,
-  imports: [
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    CommonModule,
-    MatIconModule,
-    RouterModule,
-    FormsModule,
-    MatProgressSpinnerModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    NgxChartsModule
-  ],
-  templateUrl: './url-analysis.component.html',
-  styleUrls: ['./url-analysis.component.scss'],
+    selector: 'app-url-analysis',
+    imports: [
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        CommonModule,
+        MatIconModule,
+        RouterModule,
+        FormsModule,
+        MatProgressSpinnerModule,
+        ReactiveFormsModule,
+        HttpClientModule,
+        NgxChartsModule
+    ],
+    templateUrl: './url-analysis.component.html',
+    styleUrls: ['./url-analysis.component.scss']
 })
 export class UrlAnalysisComponent {
   urlForm: FormGroup;

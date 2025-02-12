@@ -14,25 +14,23 @@ import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-phishing-log',
-  standalone: true,
-  imports: [
-    MatGridListModule,
-    MatCardModule,
-    CommonModule,
-    MatButtonModule,
-    MatIconModule, // Add MatIconModule here
-    MatFormFieldModule, // Add MatFormFieldModule here
-    MatInputModule, // Add MatInputModule here
-    RouterModule,
-    FormsModule,
-    MatTableModule,
-    MatCardModule,
-    HttpClientModule,
-  ],  templateUrl: './phishing-log.component.html',
-  styleUrls: ['./phishing-log.component.scss'],
-  providers: [DatePipe] // Add DatePipe to providers
-
+    selector: 'app-phishing-log',
+    imports: [
+        MatGridListModule,
+        MatCardModule,
+        CommonModule,
+        MatButtonModule,
+        MatIconModule, // Add MatIconModule here
+        MatFormFieldModule, // Add MatFormFieldModule here
+        MatInputModule, // Add MatInputModule here
+        RouterModule,
+        FormsModule,
+        MatTableModule,
+        MatCardModule,
+        HttpClientModule,
+    ], templateUrl: './phishing-log.component.html',
+    styleUrls: ['./phishing-log.component.scss'],
+    providers: [DatePipe] // Add DatePipe to providers
 })
 export class PhishingLogComponent implements OnInit {
   logs: any[] = [];
