@@ -8,11 +8,13 @@ url_service = URLService()
 def analyze_url():
     if request.method == "OPTIONS":
         response = jsonify({"message": "CORS preflight successful"})
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+        response.headers.add("Access-Control-Allow-Origin", "*")
         response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
         response.headers.add("Access-Control-Allow-Headers", "Content-Type")
         return response, 200
 
     url = request.json.get("url", "")
     result = url_service.analyze_url(url)
-    return jsonify(result)
+    response = jsonify(result)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
