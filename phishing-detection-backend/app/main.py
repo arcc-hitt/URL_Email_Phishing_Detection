@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 from app.config import config
 from app.routes import url_analysis, email_analysis
 import os
@@ -20,7 +20,14 @@ def create_app():
 
     app.config.from_object(config)
     mongodb_uri = app.config['MONGODB_URI']
-    client = MongoClient(mongodb_uri)
+    
+    try:
+        client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
+        client.server_info()  # Trigger exception if cannot connect to DB
+    except errors.ServerSelectionTimeoutError as err:
+        print(f"Failed to connect to MongoDB: {err}")
+        raise
+
     db = client["phishing_detection_db"]
     logs_collection = db['phishing_logs']
     bp = Blueprint('logs_api', __name__)

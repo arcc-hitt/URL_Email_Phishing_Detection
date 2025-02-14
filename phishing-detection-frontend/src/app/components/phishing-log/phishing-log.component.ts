@@ -12,7 +12,7 @@ import { DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { catchError, timeout } from 'rxjs/operators';
+import { catchError, timeout, retry } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 @Component({
@@ -44,6 +44,7 @@ export class PhishingLogComponent implements OnInit {
   totalPages: number = 1;
   itemsPerPage: number = 10;
   searchTerm: string = '';
+  loadingError: string | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -54,9 +55,10 @@ export class PhishingLogComponent implements OnInit {
   loadLogs() {
     this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`)
       .pipe(
-        timeout(5000), // Set timeout to 5 seconds
+        timeout(30000), // Increase timeout to 30 seconds
+        retry(3), // Retry up to 3 times in case of error
         catchError((err: HttpErrorResponse) => {
-          console.error('Error loading logs:', err.message);
+          this.loadingError = 'Error loading logs: ' + (err.message || 'Timeout has occurred');
           return throwError(err);
         })
       )
@@ -64,6 +66,7 @@ export class PhishingLogComponent implements OnInit {
         next: (data) => {
           this.logs = data;
           this.applyFilter(); // Initially apply the filter to display the first page
+          this.loadingError = null; // Clear any previous error
         },
         error: (err: HttpErrorResponse) => {
           console.error('Error loading logs:', err.message);
