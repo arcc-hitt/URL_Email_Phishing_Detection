@@ -12,6 +12,8 @@ import { DatePipe } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { catchError, timeout } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 @Component({
     selector: 'app-phishing-log',
@@ -50,15 +52,23 @@ export class PhishingLogComponent implements OnInit {
   }
 
   loadLogs() {
-    this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`).subscribe({
-      next: (data) => {
-        this.logs = data;
-        this.applyFilter(); // Initially apply the filter to display the first page
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error('Error loading logs:', err.message);
-      },
-    });
+    this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`)
+      .pipe(
+        timeout(5000), // Set timeout to 5 seconds
+        catchError((err: HttpErrorResponse) => {
+          console.error('Error loading logs:', err.message);
+          return throwError(err);
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.logs = data;
+          this.applyFilter(); // Initially apply the filter to display the first page
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Error loading logs:', err.message);
+        },
+      });
   }
 
   // Calculates logs for the current page
