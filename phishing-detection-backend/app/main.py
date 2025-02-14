@@ -4,6 +4,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 from app.config import config
 from app.routes import url_analysis, email_analysis
+import os
 
 def create_app():
     # Initialize the Flask app
@@ -79,5 +80,6 @@ def create_app():
 
 # Start the app
 if __name__ == "__main__":
-    app = create_app()
-    app.run(host="0.0.0.0", port=5000)
+    if os.fork() == 0:
+        app = create_app()
+        app.run(host="0.0.0.0", port=5000)
