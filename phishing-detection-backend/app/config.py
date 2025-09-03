@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
+    SECRET_KEY = os.getenv("SECRET_KEY", "default")
     DEBUG = os.getenv("DEBUG", True)
     MONGODB_URI = os.getenv("MONGODB_URI")
 
