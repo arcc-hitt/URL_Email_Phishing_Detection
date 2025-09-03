@@ -5,7 +5,7 @@ from pymongo import MongoClient
 app = Flask(__name__)
 
 # Configure CORS to allow your frontend
-CORS(app, origins=["https://url-email-phishing-detection.vercel.app", "http://localhost:3000"])
+CORS(app, origins=["https://url-email-phishing-detection.vercel.app", "http://localhost:3000", "http://localhost:4200"])
 
 # Import configuration
 from .config import config
