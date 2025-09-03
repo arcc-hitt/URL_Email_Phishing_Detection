@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, jsonify, request
 from pymongo import errors
-from . import app, db
+from app import app, db
 
 logs_collection = db['phishing_logs']
 bp = Blueprint('logs_api', __name__)
