@@ -44,14 +44,20 @@ def get_logs():
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 500
 
+# Health check endpoint
+@bp.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "message": "Phishing Detection API is running"}), 200
+
 # Utility for CORS preflight response
 def cors_preflight_response():
     response = jsonify({"message": "CORS preflight successful"})
     response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
     response.headers.add("Access-Control-Allow-Headers", "Content-Type")
     return response, 200
 
 # Start the app
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    from .config import config
+    app.run(host="0.0.0.0", port=config.PORT)
