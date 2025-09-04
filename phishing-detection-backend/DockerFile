@@ -23,8 +23,11 @@ RUN pip install -r requirements.txt
 # Copy the application
 COPY . .
 
+# Create .env file if it doesn't exist
+RUN touch .env
+
 # Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "wsgi:app", "--timeout", "300"]
+# Run the application with environment variables
+CMD ["sh", "-c", "python -m gunicorn -w 2 -b 0.0.0.0:8000 wsgi:app --timeout 300"]
