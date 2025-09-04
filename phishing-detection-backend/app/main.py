@@ -58,6 +58,6 @@ def cors_preflight_response():
     return response, 200
 
 # Start the app
-if __name__ == "__main__":
-    from .config import config
-    app.run(host="0.0.0.0", port=config.PORT)
+# if __name__ == "__main__":
+#     from .config import config
+#     app.run(host="0.0.0.0", port=config.PORT)
