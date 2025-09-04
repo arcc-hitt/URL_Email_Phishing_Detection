@@ -11,6 +11,14 @@ bp = Blueprint('logs_api', __name__)
 def handle_exception(e):
     return jsonify({"error": str(e)}), 500
 
+# Root endpoint
+@bp.route("/", methods=["GET"])
+def index():
+    return jsonify({
+        "message": "Phishing Detection Backend is running",
+        "endpoints": ["/api/email", "/api/url", "/api/phishing_logs", "/health"]
+    })
+
 # Route for saving phishing logs
 @bp.route('/api/phishing_logs', methods=['POST', 'OPTIONS'])
 def save_log():
