@@ -1,11 +1,59 @@
-<mat-toolbar color="primary">
-  <span>Phishing Detection System</span>
+<mat-toolbar color="primary" role="banner">
+  <span class="app-title">{{ title }}</span>
   <span class="spacer"></span>
-  <a mat-button routerLink="/dashboard" routerLinkActive="active-link">Dashboard</a>
-  <a mat-button routerLink="/url-analysis" routerLinkActive="active-link">URL Analysis</a>
-  <a mat-button routerLink="/email-analysis" routerLinkActive="active-link">Email Analysis</a>
-  <a mat-button routerLink="/phishing-log" routerLinkActive="active-link">Phishing Logs</a>
+  
+  <nav class="navigation-links" role="navigation">
+    <a 
+      mat-button 
+      routerLink="/dashboard" 
+      routerLinkActive="active-link"
+      (click)="onNavigationStart()"
+      aria-label="Go to Dashboard">
+      <mat-icon>dashboard</mat-icon>
+      Dashboard
+    </a>
+    <a 
+      mat-button 
+      routerLink="/url-analysis" 
+      routerLinkActive="active-link"
+      (click)="onNavigationStart()"
+      aria-label="Go to URL Analysis">
+      <mat-icon>link</mat-icon>
+      URL Analysis
+    </a>
+    <a 
+      mat-button 
+      routerLink="/email-analysis" 
+      routerLinkActive="active-link"
+      (click)="onNavigationStart()"
+      aria-label="Go to Email Analysis">
+      <mat-icon>email</mat-icon>
+      Email Analysis
+    </a>
+    <a 
+      mat-button 
+      routerLink="/phishing-log" 
+      routerLinkActive="active-link"
+      (click)="onNavigationStart()"
+      aria-label="Go to Phishing Logs">
+      <mat-icon>history</mat-icon>
+      Phishing Logs
+    </a>
+  </nav>
 </mat-toolbar>
 
-<!-- Main content will be rendered here based on the route -->
-<router-outlet></router-outlet>
+<mat-progress-bar 
+  *ngIf="isLoading" 
+  mode="indeterminate" 
+  aria-label="Loading">
+</mat-progress-bar>
+
+<main class="main-content" role="main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="footer" role="contentinfo">
+  <div class="footer-content">
+    <p>&copy; {{ currentYear }} Phishing Detection System. All rights reserved.</p>
+  </div>
+</footer>
