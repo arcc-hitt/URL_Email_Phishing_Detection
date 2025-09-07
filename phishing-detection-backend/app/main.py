@@ -1,5 +1,6 @@
 import datetime
 from flask import Blueprint, jsonify, request
+
 from app import db
 
 logs_collection = db['phishing_logs']
@@ -20,8 +21,8 @@ def save_log():
         return cors_preflight_response()
 
     try:
-        log_data = request.json
-        log_data['created_at'] = datetime.datetime.now()
+        log_data = request.get_json(force=True)
+        log_data['created_at'] = datetime.datetime.utcnow()
         logs_collection.insert_one(log_data)
         return jsonify({"message": "Log saved successfully"}), 201
     except Exception as e:
@@ -47,6 +48,6 @@ def health_check():
 def cors_preflight_response():
     response = jsonify({"message": "CORS preflight successful"})
     response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Methods", "*")
-    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
     return response, 200
