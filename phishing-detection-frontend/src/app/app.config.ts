@@ -1,7 +1,6 @@
 import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom, ErrorHandler } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import { HttpClientModule, provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
@@ -38,7 +37,6 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled'
       })
     ),
-    provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
     provideHttpClient(
       withFetch(),

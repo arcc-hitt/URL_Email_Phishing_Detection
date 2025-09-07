@@ -37,11 +37,6 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "server": "src/main.server.ts",
-            "prerender": true,
-            "ssr": {
-              "entry": "server.ts"
-            },
             "budgets": [
               {
                 "type": "initial",
@@ -62,24 +57,12 @@
               "sourceMap": false,
               "namedChunks": false,
               "aot": true,
-              "extractLicenses": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ]
+              "extractLicenses": true
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts"
-                }
-              ]
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"

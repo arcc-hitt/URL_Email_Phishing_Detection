@@ -22,6 +22,7 @@ bootstrapApplication(AppComponent, appConfig)
         text-align: center;
         font-family: 'Roboto', sans-serif;
         max-width: 400px;
+        z-index: 9999;
       ">
         <h2 style="color: #d32f2f; margin-bottom: 1rem;">
           ⚠️ Application Error
