@@ -1,14 +1,18 @@
 from flask import Flask
 from flask_cors import CORS
 from pymongo import MongoClient
+from .config import config
 
 app = Flask(__name__)
 
-# Configure CORS to allow your frontend
-CORS(app, origins=["https://url-email-phishing-detection.vercel.app", "http://localhost:3000", "http://localhost:4200"])
+# Configure CORS
+CORS(app, origins=[
+    "https://url-email-phishing-detection.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:4200"
+])
 
-# Import configuration
-from .config import config
+# Load config
 app.config.from_object(config)
 
 # Initialize MongoDB client
@@ -26,11 +30,10 @@ try:
 except Exception as e:
     print(f"MongoDB connection failed: {e}")
 
-# Import and register blueprints
+# Register blueprints
 from .routes import url_analysis, email_analysis
+from .main import bp as logs_bp
+
 app.register_blueprint(email_analysis.bp, url_prefix="/api/email")
 app.register_blueprint(url_analysis.bp, url_prefix="/api/url")
-
-# Import and register the logs blueprint
-from .main import bp as logs_bp
 app.register_blueprint(logs_bp)

@@ -25,6 +25,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 export class AppComponent implements OnInit {
   public readonly title = 'Phishing Detection System';
   public isLoading = false;
+  public currentYear = new Date().getFullYear(); // ✅ Fix: add this property
 
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
