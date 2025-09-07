@@ -47,6 +47,6 @@ def health_check():
 def cors_preflight_response():
     response = jsonify({"message": "CORS preflight successful"})
     response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
     return response, 200
