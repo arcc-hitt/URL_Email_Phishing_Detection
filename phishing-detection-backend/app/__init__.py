@@ -5,15 +5,20 @@ from .config import config
 
 app = Flask(__name__)
 
-# Configure CORS
-CORS(app, origins=[
-    "https://url-email-phishing-detection.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:4200"
-])
-
 # Load config
 app.config.from_object(config)
+
+# Configure CORS
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://url-email-phishing-detection.vercel.app",
+            "http://localhost:4200",
+            "http://localhost:3000"
+        ]
+    }
+})
+
 
 # Initialize MongoDB client
 mongodb_uri = app.config['MONGODB_URI']
