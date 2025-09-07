@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, signal, TrackByFunction } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
@@ -63,6 +63,11 @@ export class PhishingLogComponent implements OnInit, OnDestroy {
   public readonly totalPages = signal(1);
   public readonly itemsPerPage = 10;
 
+  // TrackBy function for mat-table
+  public readonly trackByLogId: TrackByFunction<LogEntry> = (index: number, log: LogEntry): string => {
+    return log._id || `${log.input_type}-${log.created_at}-${index}`;
+  };
+
   public ngOnInit(): void {
     this.loadLogs();
     this.setupSearch();
@@ -90,7 +95,7 @@ export class PhishingLogComponent implements OnInit, OnDestroy {
     this.http.get<LogEntry[]>(`${environment.apiUrl}/api/phishing_logs`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (data: LogEntry[]) => {
           // Sort by created_at in descending order (newest first)
           const sortedData = data.sort((a, b) => {
             const dateA = new Date(a.created_at).getTime();
@@ -205,9 +210,5 @@ export class PhishingLogComponent implements OnInit, OnDestroy {
     } catch {
       return 'Invalid Date';
     }
-  }
-
-  public trackByLogId(index: number, log: LogEntry): string {
-    return log._id || `${log.input_type}-${log.created_at}-${index}`;
   }
 }
