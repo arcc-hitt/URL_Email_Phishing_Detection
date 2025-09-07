@@ -4,94 +4,255 @@
       <mat-icon aria-hidden="false" aria-label="Email Analysis">email</mat-icon>
       Email Phishing Analysis
     </mat-card-title>
+    <mat-card-subtitle>
+      Connect your Gmail account or enter email details manually for analysis
+    </mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content>
-    <form (ngSubmit)="onSubmit()" #emailForm="ngForm" class="email-form">
-      <div class="gmail-entry">
-        <h6>Connect Your Gmail Account</h6>
-        <div class="button-group">
-          <button mat-raised-button color="accent" type="button" (click)="connectGmail()">Connect Gmail</button>
-          <button mat-raised-button color="warn" type="button" (click)="disconnectGmail()" [disabled]="!isAuthenticated">
-            Disconnect Gmail
-          </button>
-          <button mat-raised-button color="primary" type="button" (click)="fetchAllEmails()" [disabled]="!isAuthenticated">
-            Fetch All Emails
-          </button>
-        </div>
-  
-        <mat-form-field appearance="fill" *ngIf="emailList?.length">
+    <!-- Gmail Integration Section -->
+    <div class="gmail-section">
+      <h6>Gmail Integration</h6>
+      <div class="button-group">
+        <button 
+          mat-raised-button 
+          color="accent" 
+          type="button" 
+          (click)="connectGmail()"
+          [disabled]="loading()">
+          <mat-icon>account_circle</mat-icon>
+          Connect Gmail
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="warn" 
+          type="button" 
+          (click)="disconnectGmail()" 
+          [disabled]="!isAuthenticated() || loading()">
+          <mat-icon>logout</mat-icon>
+          Disconnect Gmail
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="primary" 
+          type="button" 
+          (click)="fetchAllEmails()" 
+          [disabled]="!isAuthenticated() || loading()">
+          <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!loading()">refresh</mat-icon>
+          {{ loading() ? 'Fetching...' : 'Fetch Emails' }}
+        </button>
+      </div>
+
+      @if (emailList().length > 0) {
+        <mat-form-field appearance="fill" class="full-width">
           <mat-label>Select Email for Analysis</mat-label>
           <mat-select [(value)]="selectedEmailId" (selectionChange)="onEmailSelect()">
-            <mat-option *ngFor="let email of emailList" [value]="email.id">
-              {{ email.subject }} - {{ email.date }}
-            </mat-option>
+            @for (email of emailList(); track email.id) {
+              <mat-option [value]="email.id">
+                {{ email.subject }} - {{ email.date | date:'short' }}
+              </mat-option>
+            }
           </mat-select>
         </mat-form-field>
-      </div>
+      }
+    </div>
 
-      <div class="manual-entry">
-        <h6>Or Enter Email Manually</h6>
-        <div class="manual-entry-grid">
+    <!-- Manual Entry Section -->
+    <div class="manual-entry">
+      <h6>Manual Email Entry</h6>
+      <form [formGroup]="emailForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-grid">
           <mat-form-field appearance="fill">
-            <mat-label>Sender</mat-label>
-            <input matInput placeholder="Enter sender email" [(ngModel)]="sender" name="sender" required />
+            <mat-label>Sender Email</mat-label>
+            <input 
+              matInput 
+              formControlName="sender" 
+              placeholder="sender@example.com"
+              type="email"
+              autocomplete="email">
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="emailForm.get('sender')?.hasError('required')">
+              Sender email is required
+            </mat-error>
+            <mat-error *ngIf="emailForm.get('sender')?.hasError('email')">
+              Please enter a valid email address
+            </mat-error>
           </mat-form-field>
+
           <mat-form-field appearance="fill">
-            <mat-label>Receiver</mat-label>
-            <input matInput placeholder="Enter receiver email" [(ngModel)]="receiver" name="receiver" required />
+            <mat-label>Receiver Email</mat-label>
+            <input 
+              matInput 
+              formControlName="receiver" 
+              placeholder="receiver@example.com"
+              type="email"
+              autocomplete="email">
+            <mat-icon matSuffix>person_outline</mat-icon>
+            <mat-error *ngIf="emailForm.get('receiver')?.hasError('required')">
+              Receiver email is required
+            </mat-error>
+            <mat-error *ngIf="emailForm.get('receiver')?.hasError('email')">
+              Please enter a valid email address
+            </mat-error>
           </mat-form-field>
+
           <mat-form-field appearance="fill">
             <mat-label>Date</mat-label>
-            <input matInput placeholder="Enter date" [(ngModel)]="date" name="date" required />
+            <input 
+              matInput 
+              formControlName="date" 
+              placeholder="YYYY-MM-DD"
+              type="date">
+            <mat-icon matSuffix>calendar_today</mat-icon>
+            <mat-error *ngIf="emailForm.get('date')?.hasError('required')">
+              Date is required
+            </mat-error>
           </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Subject</mat-label>
-            <input matInput placeholder="Enter email subject" [(ngModel)]="subject" name="subject" required />
-          </mat-form-field>
-          <mat-form-field appearance="fill" class="full-width">
-            <mat-label>Email Body</mat-label>
-            <textarea matInput placeholder="Enter email body" [(ngModel)]="body" name="body" required></textarea>
-          </mat-form-field>
+
           <mat-form-field appearance="fill">
             <mat-label>URLs Count</mat-label>
-            <input matInput type="number" placeholder="Enter number of URLs" [(ngModel)]="urls" name="urls" required />
+            <input 
+              matInput 
+              formControlName="urls" 
+              type="number" 
+              min="0"
+              placeholder="0">
+            <mat-icon matSuffix>link</mat-icon>
+            <mat-error *ngIf="emailForm.get('urls')?.hasError('required')">
+              URLs count is required
+            </mat-error>
+            <mat-error *ngIf="emailForm.get('urls')?.hasError('min')">
+              URLs count must be 0 or greater
+            </mat-error>
           </mat-form-field>
-          <div class="action-buttons">
-            <button mat-raised-button color="primary" type="submit" [disabled]="!emailForm.valid">Analyze Email</button>
+
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Email Subject</mat-label>
+            <input 
+              matInput 
+              formControlName="subject" 
+              placeholder="Enter email subject"
+              maxlength="500">
+            <mat-icon matSuffix>title</mat-icon>
+            <mat-hint>{{ emailForm.get('subject')?.value?.length || 0 }}/500</mat-hint>
+            <mat-error *ngIf="emailForm.get('subject')?.hasError('required')">
+              Email subject is required
+            </mat-error>
+            <mat-error *ngIf="emailForm.get('subject')?.hasError('maxlength')">
+              Subject is too long (max 500 characters)
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Email Body</mat-label>
+            <textarea 
+              matInput 
+              formControlName="body" 
+              placeholder="Enter email body content"
+              rows="6"
+              maxlength="10000">
+            </textarea>
+            <mat-icon matSuffix>description</mat-icon>
+            <mat-hint>{{ emailForm.get('body')?.value?.length || 0 }}/10,000</mat-hint>
+            <mat-error *ngIf="emailForm.get('body')?.hasError('required')">
+              Email body is required
+            </mat-error>
+            <mat-error *ngIf="emailForm.get('body')?.hasError('maxlength')">
+              Body is too long (max 10,000 characters)
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="action-buttons">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit" 
+            [disabled]="!emailForm.valid || loading()"
+            aria-label="Analyze Email">
+            <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!loading()">analytics</mat-icon>
+            {{ loading() ? 'Analyzing...' : 'Analyze Email' }}
+          </button>
+
+          <button 
+            mat-stroked-button 
+            type="button" 
+            (click)="onReset()"
+            [disabled]="loading()"
+            aria-label="Reset Form">
+            <mat-icon>refresh</mat-icon>
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    @if (analysisResult() && !loading()) {
+      <div
+        class="result-container"
+        [ngClass]="{
+          'phishing-detected': analysisResult()?.is_phishing,
+          'safe-email': !analysisResult()?.is_phishing
+        }">
+        
+        <div class="result-header">
+          <mat-icon [ngClass]="{
+            'phishing-icon': analysisResult()?.is_phishing,
+            'safe-icon': !analysisResult()?.is_phishing
+          }">
+            {{ analysisResult()?.is_phishing ? 'warning' : 'verified_user' }}
+          </mat-icon>
+          <h3>Analysis Results</h3>
+        </div>
+
+        <div class="result-details">
+          <div class="score-item">
+            <strong>Autoencoder Score:</strong> 
+            <span class="score-value">{{ analysisResult()?.autoencoder_score | number:'1.4-4' }}</span>
+          </div>
+          
+          <div class="score-item">
+            <strong>LightGBM Score:</strong> 
+            <span class="score-value">{{ analysisResult()?.lightgbm_score | number:'1.4-4' }}</span>
+          </div>
+          
+          <div class="detection-status">
+            <strong>Status:</strong>
+            <span 
+              class="status-badge"
+              [ngClass]="{
+                'phishing': analysisResult()?.is_phishing,
+                'safe': !analysisResult()?.is_phishing
+              }">
+              {{ analysisResult()?.is_phishing ? 'PHISHING DETECTED' : 'SAFE' }}
+            </span>
           </div>
         </div>
-      </div>
-    </form>
 
-    <div
-      *ngIf="analysisResult"
-      class="result"
-      [ngStyle]="{
-        'background-color': analysisResult.is_phishing ? '#fae0e0' : '#e0f7fa'
-      }"
-    >
-      <h3>Analysis Result:</h3>
-      <p><strong>Autoencoder Score:</strong> {{ analysisResult.autoencoder_score }}</p>
-      <p><strong>LightGBM Score:</strong> {{ analysisResult.lightgbm_score }}</p>
-      <p class="detection-status">
-        <strong>Phishing Detection:</strong> 
-        <span [class.phishing]="analysisResult.is_phishing" [class.safe]="!analysisResult.is_phishing">
-          {{ analysisResult.is_phishing ? 'Phishing' : 'Safe' }}
-        </span>
-      </p>
-      <ngx-charts-bar-vertical
-        [results]="chartData"
-        [view]="view"
-        [scheme]="'vivid'"
-        [xAxis]="true"
-        [yAxis]="true"
-        [legend]="true"
-        [showXAxisLabel]="true"
-        [xAxisLabel]="'Score'"
-        [showYAxisLabel]="true"
-        [yAxisLabel]="'Analysis Metrics'"
-      ></ngx-charts-bar-vertical>
-    </div>  
+        <!-- Chart Display -->
+        @if (chartData().length > 0) {
+          <div class="chart-container">
+            <h4>Score Breakdown</h4>
+            <ngx-charts-bar-vertical
+              [results]="chartData()"
+              [view]="view"
+              [scheme]="'vivid'"
+              [xAxis]="true"
+              [yAxis]="true"
+              [legend]="true"
+              [showXAxisLabel]="true"
+              [xAxisLabel]="'Detection Model'"
+              [showYAxisLabel]="true"
+              [yAxisLabel]="'Confidence Score'">
+            </ngx-charts-bar-vertical>
+          </div>
+        }
+      </div>
+    }
   </mat-card-content>
 </mat-card>

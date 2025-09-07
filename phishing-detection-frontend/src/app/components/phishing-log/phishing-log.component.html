@@ -1,60 +1,185 @@
 <mat-card class="phishing-log-card">
   <mat-card-header>
-    <mat-card-title>
-      <mat-icon aria-hidden="false">warning</mat-icon> Phishing Logs
-    </mat-card-title>
-    <mat-form-field class="search-bar" appearance="outline">
-      <mat-label>Search Logs</mat-label>
-      <input matInput placeholder="Enter search term" [(ngModel)]="searchTerm" (input)="applyFilter()" />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
+    <div class="header-content">
+      <mat-card-title>
+        <mat-icon aria-hidden="false">warning</mat-icon>
+        Phishing Detection Logs
+      </mat-card-title>
+      
+      <div class="header-actions">
+        <mat-form-field class="search-field" appearance="outline">
+          <mat-label>Search logs</mat-label>
+          <input 
+            matInput 
+            [formControl]="searchControl"
+            placeholder="Search by type, data, result, or date"
+            autocomplete="off">
+          <mat-icon matSuffix>search</mat-icon>
+          @if (searchControl.value) {
+            <button 
+              matSuffix 
+              mat-icon-button 
+              (click)="clearSearch()"
+              aria-label="Clear search">
+              <mat-icon>clear</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+        
+        <button 
+          mat-icon-button 
+          (click)="refreshLogs()"
+          [disabled]="loading()"
+          matTooltip="Refresh logs"
+          aria-label="Refresh logs">
+          <mat-icon [class.spinning]="loading()">refresh</mat-icon>
+        </button>
+      </div>
+    </div>
   </mat-card-header>
 
   <mat-card-content>
-    <table mat-table [dataSource]="displayedLogs" class="mat-elevation-z8">
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading logs...</p>
+      </div>
+    } @else if (error()) {
+      <div class="error-container">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-raised-button color="primary" (click)="refreshLogs()">
+          <mat-icon>refresh</mat-icon>
+          Retry
+        </button>
+      </div>
+    } @else if (logs().length === 0) {
+      <div class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <p>No logs available</p>
+        <small>Logs will appear here after you perform URL or email analysis</small>
+      </div>
+    } @else {
+      <!-- Results Summary -->
+      <div class="results-summary">
+        <span class="total-results">
+          Showing {{ displayedLogs().length }} of {{ filteredLogs().length }} logs
+          @if (searchControl.value) {
+            <span class="search-info">(filtered from {{ logs().length }} total)</span>
+          }
+        </span>
+      </div>
 
-      <!-- Input Type Column -->
-      <ng-container matColumnDef="input_type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let log">{{ log.input_type }}</td>
-      </ng-container>
+      <!-- Data Table -->
+      <div class="table-container">
+        <table mat-table [dataSource]="displayedLogs()" [trackByFn]="trackByLogId" class="logs-table">
+          
+          <!-- Type Column -->
+          <ng-container matColumnDef="input_type">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-cell">
+                <mat-icon>category</mat-icon>
+                Type
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let log">
+              <div class="type-cell">
+                <mat-icon [attr.aria-label]="log.input_type">{{ getTypeIcon(log.input_type) }}</mat-icon>
+                {{ log.input_type }}
+              </div>
+            </td>
+          </ng-container>
 
-      <!-- Input Data Column -->
-      <ng-container matColumnDef="input_data">
-        <th mat-header-cell *matHeaderCellDef>Input</th>
-        <td mat-cell *matCellDef="let log">{{ log.input_data }}</td>
-      </ng-container>
+          <!-- Input Data Column -->
+          <ng-container matColumnDef="input_data">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-cell">
+                <mat-icon>data_usage</mat-icon>
+                Input Data
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let log">
+              <div class="data-cell" [title]="log.input_data">
+                {{ log.input_data.length > 50 ? (log.input_data | slice:0:50) + '...' : log.input_data }}
+              </div>
+            </td>
+          </ng-container>
 
-      <!-- Classification Result Column -->
-      <ng-container matColumnDef="classification_result">
-        <th mat-header-cell *matHeaderCellDef>Result</th>
-        <td mat-cell *matCellDef="let log">
-          <span [class.phishing]="log.classification_result === 'Phishing'">
-            {{ log.classification_result }}
-          </span>
-        </td>
-      </ng-container>
+          <!-- Classification Result Column -->
+          <ng-container matColumnDef="classification_result">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-cell">
+                <mat-icon>assessment</mat-icon>
+                Result
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let log">
+              <span 
+                class="status-badge" 
+                [ngClass]="getResultClass(log.classification_result)"
+                [attr.aria-label]="log.classification_result">
+                <mat-icon>
+                  {{ log.classification_result.toLowerCase() === 'phishing' ? 'warning' : 'verified_user' }}
+                </mat-icon>
+                {{ log.classification_result }}
+              </span>
+            </td>
+          </ng-container>
 
-      <!-- Created At Column -->
-      <ng-container matColumnDef="created_at">
-        <th mat-header-cell *matHeaderCellDef>Timestamp</th>
-        <td mat-cell *matCellDef="let log">{{ log.created_at | date: 'short' }}</td>
-      </ng-container>
+          <!-- Created At Column -->
+          <ng-container matColumnDef="created_at">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="header-cell">
+                <mat-icon>schedule</mat-icon>
+                Timestamp
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let log">
+              <div class="date-cell">
+                <time [dateTime]="log.created_at">
+                  {{ formatDate(log.created_at) }}
+                </time>
+              </div>
+            </td>
+          </ng-container>
 
-      <!-- Row Definitions -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+          <!-- Header and Row Definitions -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+              [class.phishing-row]="row.classification_result.toLowerCase() === 'phishing'"></tr>
+        </table>
+      </div>
 
-    <!-- Pagination Controls -->
-    <div class="pagination-controls">
-      <button mat-icon-button (click)="previousPage()" [disabled]="currentPage === 1">
-        <mat-icon>chevron_left</mat-icon>
-      </button>
-      <span>Page {{ currentPage }} of {{ totalPages }}</span>
-      <button mat-icon-button (click)="nextPage()" [disabled]="currentPage === totalPages">
-        <mat-icon>chevron_right</mat-icon>
-      </button>
-    </div>
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="pagination-container">
+          <div class="pagination-info">
+            Page {{ currentPage() }} of {{ totalPages() }}
+          </div>
+          
+          <div class="pagination-controls">
+            <button 
+              mat-icon-button 
+              (click)="previousPage()" 
+              [disabled]="currentPage() === 1"
+              aria-label="Previous page">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            
+            <span class="page-indicator">
+              {{ currentPage() }} / {{ totalPages() }}
+            </span>
+            
+            <button 
+              mat-icon-button 
+              (click)="nextPage()" 
+              [disabled]="currentPage() === totalPages()"
+              aria-label="Next page">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    }
   </mat-card-content>
 </mat-card>

@@ -1,110 +1,213 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon'; // Import MatIconModule
-import { MatFormFieldModule } from '@angular/material/form-field'; // Import MatFormFieldModule
-import { MatInputModule } from '@angular/material/input'; // Import MatInputModule
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // Import FormsModule
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { DatePipe } from '@angular/common';
-import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+
 import { environment } from '../../../environments/environment';
-import { catchError, timeout, retry } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+
+interface LogEntry {
+  _id?: string;
+  input_type: string;
+  input_data: string;
+  classification_result: string;
+  created_at: Date | string;
+}
 
 @Component({
-    selector: 'app-phishing-log',
-    standalone: true,
-    imports: [
-        MatGridListModule,
-        MatCardModule,
-        CommonModule,
-        MatButtonModule,
-        MatIconModule, // Add MatIconModule here
-        MatFormFieldModule, // Add MatFormFieldModule here
-        MatInputModule, // Add MatInputModule here
-        RouterModule,
-        FormsModule,
-        MatTableModule,
-        MatCardModule,
-        HttpClientModule,
-    ], templateUrl: './phishing-log.component.html',
-    styleUrls: ['./phishing-log.component.scss'],
-    providers: [DatePipe] // Add DatePipe to providers
+  selector: 'app-phishing-log',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatTableModule,
+    MatCardModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    ReactiveFormsModule,
+    CommonModule
+  ],
+  templateUrl: './phishing-log.component.html',
+  styleUrls: ['./phishing-log.component.scss'],
+  providers: [DatePipe]
 })
-export class PhishingLogComponent implements OnInit {
-  logs: any[] = [];
-  displayedLogs: any[] = []; // Holds the logs for the current page
-  filteredLogs: any[] = [];
-  displayedColumns: string[] = ['input_type', 'input_data', 'classification_result', 'created_at'];
-  currentPage: number = 1;
-  totalPages: number = 1;
-  itemsPerPage: number = 10;
-  searchTerm: string = '';
-  loadingError: string | null = null;
+export class PhishingLogComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private readonly http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  public readonly searchControl = new FormControl('');
+  public readonly logs = signal<LogEntry[]>([]);
+  public readonly filteredLogs = signal<LogEntry[]>([]);
+  public readonly displayedLogs = signal<LogEntry[]>([]);
+  public readonly loading = signal(false);
+  public readonly error = signal<string | null>(null);
 
-  ngOnInit() {
+  public readonly displayedColumns: readonly string[] = [
+    'input_type', 
+    'input_data', 
+    'classification_result', 
+    'created_at'
+  ] as const;
+
+  // Pagination
+  public readonly currentPage = signal(1);
+  public readonly totalPages = signal(1);
+  public readonly itemsPerPage = 10;
+
+  public ngOnInit(): void {
     this.loadLogs();
+    this.setupSearch();
   }
 
-  loadLogs() {
-    this.http.get<any[]>(`${environment.apiUrl}/api/phishing_logs`)
-      .pipe(
-        timeout(30000), // Increase timeout to 30 seconds
-        retry(3), // Retry up to 3 times in case of error
-        catchError((err: HttpErrorResponse) => {
-          this.loadingError = 'Error loading logs: ' + (err.message || 'Timeout has occurred');
-          return throwError(err);
-        })
-      )
+  public ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupSearch(): void {
+    this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.applyFilter();
+    });
+  }
+
+  private loadLogs(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.http.get<LogEntry[]>(`${environment.apiUrl}/api/phishing_logs`)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.logs = data;
-          this.applyFilter(); // Initially apply the filter to display the first page
-          this.loadingError = null; // Clear any previous error
+          // Sort by created_at in descending order (newest first)
+          const sortedData = data.sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return dateB - dateA;
+          });
+          
+          this.logs.set(sortedData);
+          this.applyFilter();
+          this.loading.set(false);
         },
         error: (err: HttpErrorResponse) => {
-          console.error('Error loading logs:', err.message);
-        },
+          this.handleError(err);
+          this.loading.set(false);
+        }
       });
   }
 
-  // Calculates logs for the current page
-  updateDisplayedLogs() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.displayedLogs = this.filteredLogs.slice(start, end);
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updateDisplayedLogs();
+  private handleError(error: HttpErrorResponse): void {
+    let errorMessage = 'An error occurred while loading logs.';
+    
+    if (error.status === 0) {
+      errorMessage = 'Unable to connect to the server. Please check your connection.';
+    } else if (error.status >= 400 && error.status < 500) {
+      errorMessage = 'Invalid request. Please try again.';
+    } else if (error.status >= 500) {
+      errorMessage = 'Server error. Please try again later.';
     }
+    
+    this.error.set(errorMessage);
+    console.error('Error loading logs:', error);
   }
 
-  previousPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updateDisplayedLogs();
+  public applyFilter(): void {
+    const searchTerm = this.searchControl.value?.toLowerCase() || '';
+    const allLogs = this.logs();
+    
+    let filtered: LogEntry[];
+    if (!searchTerm.trim()) {
+      filtered = [...allLogs];
+    } else {
+      filtered = allLogs.filter(log => 
+        log.input_type.toLowerCase().includes(searchTerm) ||
+        log.input_data.toLowerCase().includes(searchTerm) ||
+        log.classification_result.toLowerCase().includes(searchTerm) ||
+        new Date(log.created_at).toLocaleDateString().toLowerCase().includes(searchTerm)
+      );
     }
-  }
 
-  // Filters logs and updates pagination
-  applyFilter() {
-    this.filteredLogs = this.logs.filter((log) =>
-      Object.values(log)
-        .join(' ')
-        .toLowerCase()
-        .includes(this.searchTerm.toLowerCase())
-    );
-    this.totalPages = Math.ceil(this.filteredLogs.length / this.itemsPerPage);
-    this.currentPage = 1; // Reset to first page after filtering
+    this.filteredLogs.set(filtered);
+    this.calculatePagination();
+    this.currentPage.set(1); // Reset to first page
     this.updateDisplayedLogs();
+  }
+
+  private calculatePagination(): void {
+    const totalItems = this.filteredLogs().length;
+    const pages = Math.ceil(totalItems / this.itemsPerPage);
+    this.totalPages.set(Math.max(1, pages));
+  }
+
+  private updateDisplayedLogs(): void {
+    const filtered = this.filteredLogs();
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    this.displayedLogs.set(filtered.slice(start, end));
+  }
+
+  public nextPage(): void {
+    const current = this.currentPage();
+    const total = this.totalPages();
+    if (current < total) {
+      this.currentPage.set(current + 1);
+      this.updateDisplayedLogs();
+    }
+  }
+
+  public previousPage(): void {
+    const current = this.currentPage();
+    if (current > 1) {
+      this.currentPage.set(current - 1);
+      this.updateDisplayedLogs();
+    }
+  }
+
+  public refreshLogs(): void {
+    this.loadLogs();
+  }
+
+  public clearSearch(): void {
+    this.searchControl.setValue('');
+  }
+
+  public getResultClass(result: string): string {
+    return result.toLowerCase() === 'phishing' ? 'phishing-result' : 'safe-result';
+  }
+
+  public getTypeIcon(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'url':
+        return 'link';
+      case 'email':
+        return 'email';
+      default:
+        return 'description';
+    }
+  }
+
+  public formatDate(date: Date | string): string {
+    try {
+      return new Date(date).toLocaleString();
+    } catch {
+      return 'Invalid Date';
+    }
+  }
+
+  public trackByLogId(index: number, log: LogEntry): string {
+    return log._id || `${log.input_type}-${log.created_at}-${index}`;
   }
 }

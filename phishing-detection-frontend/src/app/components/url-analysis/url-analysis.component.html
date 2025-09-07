@@ -35,18 +35,18 @@
           mat-raised-button 
           color="primary" 
           type="submit" 
-          [disabled]="!urlForm.valid || loading"
+          [disabled]="!urlForm.valid || loading()"
           aria-label="Analyze URL">
-          <mat-icon *ngIf="!loading">search</mat-icon>
-          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-          {{ loading ? 'Analyzing...' : 'Analyze URL' }}
+          <mat-icon *ngIf="!loading()">search</mat-icon>
+          <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+          {{ loading() ? 'Analyzing...' : 'Analyze URL' }}
         </button>
         
         <button 
           mat-stroked-button 
           type="button" 
           (click)="onReset()"
-          [disabled]="loading"
+          [disabled]="loading()"
           aria-label="Reset form">
           <mat-icon>refresh</mat-icon>
           Reset
@@ -55,76 +55,81 @@
     </form>
 
     <!-- Error Display -->
-    <mat-card *ngIf="error" class="error-card">
-      <mat-card-content>
-        <div class="error-content">
-          <mat-icon color="warn">error</mat-icon>
-          <span>{{ error }}</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
+    @if (error()) {
+      <mat-card class="error-card">
+        <mat-card-content>
+          <div class="error-content">
+            <mat-icon color="warn">error</mat-icon>
+            <span>{{ error() }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
 
     <!-- Results Display -->
-    <div
-      *ngIf="analysisResult && !loading"
-      class="result-container"
-      [ngClass]="{
-        'phishing-detected': analysisResult.is_phishing,
-        'safe-url': !analysisResult.is_phishing
-      }">
-      
-      <div class="result-header">
-        <mat-icon [ngClass]="{
-          'phishing-icon': analysisResult.is_phishing,
-          'safe-icon': !analysisResult.is_phishing
+    @if (analysisResult() && !loading()) {
+      <div
+        class="result-container"
+        [ngClass]="{
+          'phishing-detected': analysisResult()?.is_phishing,
+          'safe-url': !analysisResult()?.is_phishing
         }">
-          {{ analysisResult.is_phishing ? 'warning' : 'verified_user' }}
-        </mat-icon>
-        <h3>Analysis Results</h3>
-      </div>
-
-      <div class="result-details">
-        <div class="score-item">
-          <strong>Autoencoder Score:</strong> 
-          <span class="score-value">{{ analysisResult.autoencoder_score | number:'1.4-4' }}</span>
-        </div>
         
-        <div class="score-item">
-          <strong>XGBoost Score:</strong> 
-          <span class="score-value">{{ analysisResult.xgboost_score | number:'1.4-4' }}</span>
+        <div class="result-header">
+          <mat-icon [ngClass]="{
+            'phishing-icon': analysisResult()?.is_phishing,
+            'safe-icon': !analysisResult()?.is_phishing
+          }">
+            {{ analysisResult()?.is_phishing ? 'warning' : 'verified_user' }}
+          </mat-icon>
+          <h3>Analysis Results</h3>
         </div>
-        
-        <div class="detection-status">
-          <strong>Status:</strong>
-          <span 
-            class="status-badge"
-            [ngClass]="{
-              'phishing': analysisResult.is_phishing,
-              'safe': !analysisResult.is_phishing
-            }">
-            {{ analysisResult.is_phishing ? 'PHISHING DETECTED' : 'SAFE' }}
-          </span>
-        </div>
-      </div>
 
-      <!-- Chart Display -->
-      <div class="chart-container" *ngIf="chartData.length > 0">
-        <h4>Score Breakdown</h4>
-        <ngx-charts-bar-vertical
-          [view]="view"
-          [scheme]="'vivid'"
-          [results]="chartData"
-          [gradient]="false"
-          [xAxis]="true"
-          [yAxis]="true"
-          [legend]="true"
-          [showXAxisLabel]="true"
-          [showYAxisLabel]="true"
-          [xAxisLabel]="'Detection Model'"
-          [yAxisLabel]="'Confidence Score'"
-          [barPadding]="20">
-        </ngx-charts-bar-vertical>
+        <div class="result-details">
+          <div class="score-item">
+            <strong>Autoencoder Score:</strong> 
+            <span class="score-value">{{ analysisResult()?.autoencoder_score | number:'1.4-4' }}</span>
+          </div>
+          
+          <div class="score-item">
+            <strong>XGBoost Score:</strong> 
+            <span class="score-value">{{ analysisResult()?.xgboost_score | number:'1.4-4' }}</span>
+          </div>
+          
+          <div class="detection-status">
+            <strong>Status:</strong>
+            <span 
+              class="status-badge"
+              [ngClass]="{
+                'phishing': analysisResult()?.is_phishing,
+                'safe': !analysisResult()?.is_phishing
+              }">
+              {{ analysisResult()?.is_phishing ? 'PHISHING DETECTED' : 'SAFE' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Chart Display -->
+        @if (chartData().length > 0) {
+          <div class="chart-container">
+            <h4>Score Breakdown</h4>
+            <ngx-charts-bar-vertical
+              [view]="view"
+              [scheme]="'vivid'"
+              [results]="chartData()"
+              [gradient]="false"
+              [xAxis]="true"
+              [yAxis]="true"
+              [legend]="true"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              [xAxisLabel]="'Detection Model'"
+              [yAxisLabel]="'Confidence Score'"
+              [barPadding]="20">
+            </ngx-charts-bar-vertical>
+          </div>
+        }
       </div>
-    </div>
+    }
   </mat-card-content>
 </mat-card>

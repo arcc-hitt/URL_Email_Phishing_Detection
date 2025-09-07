@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatToolbarModule,
     MatButtonModule,
@@ -22,17 +23,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   ]
 })
 export class AppComponent implements OnInit {
-[x: string]: any;
-  title = 'Phishing Detection System';
-  isLoading = false;
-  currentYear = new Date().getFullYear();
+  public readonly title = 'Phishing Detection System';
+  public isLoading = false;
 
-  constructor(
-    private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  ngOnInit() {
+  public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       // Show loading indicator during navigation
       this.router.events.pipe(
@@ -43,7 +40,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  onNavigationStart() {
+  public onNavigationStart(): void {
     this.isLoading = true;
   }
 }
