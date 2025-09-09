@@ -44,3 +44,21 @@ from .main import bp as logs_bp
 app.register_blueprint(email_analysis.bp, url_prefix="/api/email")
 app.register_blueprint(url_analysis.bp, url_prefix="/api/url")
 app.register_blueprint(logs_bp)
+
+# Preload models after app initialization
+def preload_models():
+    try:
+        print("Preloading ML models...")
+        from .services.url_service import URLService
+        URLService.preload_models()
+        print("ML models preloaded successfully")
+    except Exception as e:
+        print(f"Error preloading models: {e}")
+        # Don't raise the error to allow the app to start
+
+# Use with_appcontext instead of deprecated before_first_request
+with app.app_context():
+    try:
+        preload_models()
+    except Exception as e:
+        print(f"Failed to preload models during startup: {e}")

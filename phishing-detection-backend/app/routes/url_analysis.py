@@ -12,10 +12,34 @@ def get_url_service():
         url_service = URLService()
     return url_service
 
+@bp.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint that doesn't require model loading"""
+    try:
+        models_ready = URLService.models_ready()
+        return jsonify({
+            "status": "healthy" if models_ready else "loading",
+            "models_loaded": models_ready
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "models_loaded": False
+        }), 500
+
 @bp.route("/analyze", methods=["POST"])
 def analyze_url():
     try:
-        url = request.json.get("url", "")
+        # Check if request has JSON data
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 400
+            
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+            
+        url = data.get("url", "")
         if not url:
             return jsonify({"error": "URL is required"}), 400
             
