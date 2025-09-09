@@ -24,6 +24,8 @@ def test_xgboost_model():
 def test_autoencoder_model():
     try:
         print("Testing Autoencoder model loading...")
+        # Import TensorFlow config first
+        from app.tf_config import tf
         from app.models.url_autoencoder_model import URLAutoencoderModel
         model = URLAutoencoderModel()
         print("✓ Autoencoder model loaded successfully")

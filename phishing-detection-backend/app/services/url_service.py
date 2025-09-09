@@ -37,21 +37,28 @@ class URLService:
                 cls._xgboost_model = XGBoostModel()
                 logger.info("XGBoost model loaded successfully")
                 
-                # Load Autoencoder model
-                logger.info("Loading Autoencoder model...")
-                from app.models.url_autoencoder_model import URLAutoencoderModel
-                cls._autoencoder_model = URLAutoencoderModel()
-                logger.info("Autoencoder model loaded successfully")
+                # Try to load Autoencoder model, but don't fail if it doesn't work
+                try:
+                    logger.info("Loading Autoencoder model...")
+                    # Import TensorFlow config first to ensure proper configuration
+                    from app.tf_config import tf
+                    from app.models.url_autoencoder_model import URLAutoencoderModel
+                    cls._autoencoder_model = URLAutoencoderModel()
+                    logger.info("Autoencoder model loaded successfully")
+                except Exception as ae_error:
+                    logger.warning(f"Autoencoder model loading failed, will use fallback: {ae_error}")
+                    cls._autoencoder_model = None
                 
                 cls._models_loaded = True
-                logger.info("All models preloaded successfully")
+                logger.info("Model preloading completed")
                 
                 # Force garbage collection
                 gc.collect()
                 
             except Exception as e:
                 logger.error(f"Error preloading models: {e}")
-                raise e
+                # Don't raise the error - allow the service to start with partial functionality
+                cls._models_loaded = True  # Mark as loaded even if some models failed
     
     @classmethod
     def get_xgboost_model(cls):
@@ -68,7 +75,7 @@ class URLService:
     @classmethod
     def models_ready(cls):
         """Check if models are loaded and ready"""
-        return cls._models_loaded and cls._xgboost_model is not None and cls._autoencoder_model is not None
+        return cls._models_loaded and cls._xgboost_model is not None
 
     def analyze_url(self, url):
         try:
@@ -92,30 +99,35 @@ class URLService:
             xgboost_score_normalized = self.xgboost_scaler.transform([[xgboost_phishing_score]])[0][0]
 
             # Step 3: Get Autoencoder model anomaly score with fallback
-            autoencoder_score = 0.0
-            autoencoder_score_normalized = 0.0
+            autoencoder_score = 25.0  # Default fallback score
+            autoencoder_score_normalized = 0.25
+            autoencoder_fallback = True
             
-            try:
-                autoencoder_model = self.get_autoencoder_model()
-                autoencoder_score = autoencoder_model.predict(features)
-                if isinstance(autoencoder_score, (list, np.ndarray)):
-                    autoencoder_score = autoencoder_score[0]  # Handle array output
-                logger.info(f"Autoencoder prediction completed: {autoencoder_score}")
-                
-                # Normalize Autoencoder score
-                autoencoder_score_normalized = self.autoencoder_scaler.transform([[autoencoder_score]])[0][0]
-                
-            except Exception as ae_error:
-                logger.warning(f"Autoencoder prediction failed, using fallback: {ae_error}")
-                # Use a conservative fallback score
-                autoencoder_score = 25.0  # Below threshold, so won't trigger phishing alone
-                autoencoder_score_normalized = 0.25
-
-            # Step 4: Determine if phishing based on original thresholds
-            # If autoencoder failed, rely more heavily on XGBoost
-            if autoencoder_score == 25.0:  # Fallback case
-                is_phishing = xgboost_phishing_score >= 0.7  # Lower threshold when autoencoder fails
+            # Try to use autoencoder if available
+            if self._autoencoder_model is not None:
+                try:
+                    autoencoder_model = self.get_autoencoder_model()
+                    autoencoder_score = autoencoder_model.predict(features)
+                    if isinstance(autoencoder_score, (list, np.ndarray)):
+                        autoencoder_score = autoencoder_score[0]  # Handle array output
+                    logger.info(f"Autoencoder prediction completed: {autoencoder_score}")
+                    
+                    # Normalize Autoencoder score
+                    autoencoder_score_normalized = self.autoencoder_scaler.transform([[autoencoder_score]])[0][0]
+                    autoencoder_fallback = False
+                    
+                except Exception as ae_error:
+                    logger.warning(f"Autoencoder prediction failed, using fallback: {ae_error}")
+                    # Keep fallback values
             else:
+                logger.info("Autoencoder model not available, using fallback")
+
+            # Step 4: Determine if phishing based on available models
+            if autoencoder_fallback:
+                # Use only XGBoost with adjusted threshold
+                is_phishing = xgboost_phishing_score >= 0.7  # Lower threshold when autoencoder not available
+            else:
+                # Use both models with original thresholds
                 is_phishing = (
                     xgboost_phishing_score >= self.xgboost_phishing_threshold and 
                     autoencoder_score >= self.autoencoder_anomaly_threshold
@@ -130,7 +142,7 @@ class URLService:
                 "autoencoder_score": float(autoencoder_score_normalized),
                 "original_xgboost_score": float(xgboost_phishing_score),
                 "original_autoencoder_score": float(autoencoder_score),
-                "autoencoder_fallback": autoencoder_score == 25.0
+                "autoencoder_fallback": autoencoder_fallback
             }
             
             logger.info(f"Analysis completed: is_phishing={is_phishing}")

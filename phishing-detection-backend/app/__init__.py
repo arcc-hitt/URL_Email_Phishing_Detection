@@ -49,6 +49,8 @@ app.register_blueprint(logs_bp)
 def preload_models():
     try:
         print("Preloading ML models...")
+        # Import TensorFlow config first
+        from .tf_config import tf
         from .services.url_service import URLService
         URLService.preload_models()
         print("ML models preloaded successfully")
@@ -62,3 +64,4 @@ with app.app_context():
         preload_models()
     except Exception as e:
         print(f"Failed to preload models during startup: {e}")
+        # Continue anyway - the service can work with partial functionality

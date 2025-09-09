@@ -1,20 +1,11 @@
 import os
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.losses import MeanSquaredError
 import logging
 
-# Configure TensorFlow for maximum memory efficiency
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow logs
-tf.get_logger().setLevel('ERROR')
-
-# Disable GPU completely
-tf.config.set_visible_devices([], 'GPU')
-
-# Configure CPU usage
-tf.config.threading.set_intra_op_parallelism_threads(1)
-tf.config.threading.set_inter_op_parallelism_threads(1)
+# Import TensorFlow configuration first
+from app.tf_config import tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.losses import MeanSquaredError
 
 logger = logging.getLogger(__name__)
 
