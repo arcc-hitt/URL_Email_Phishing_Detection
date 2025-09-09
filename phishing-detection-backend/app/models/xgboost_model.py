@@ -10,8 +10,11 @@ class XGBoostModel:
         model_path = os.path.join(base_dir, 'saved', 'xgboost_model.json')
         self.model = xgb.XGBClassifier()
         self.model.load_model(model_path)
+        
+        # Set thread count to 1 to reduce memory usage
+        self.model.set_params(n_jobs=1)
 
     def predict(self, features):
-        features = np.array(features).reshape(1, -1)
+        features = np.array(features, dtype=np.float32).reshape(1, -1)  # Use float32 to save memory
         return self.model.predict_proba(features)
 

@@ -15,7 +15,9 @@ CORS(app, resources={
             "https://url-email-phishing-detection.vercel.app",
             "http://localhost:4200",
             "http://localhost:3000"
-        ]
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
     }
 })
 
