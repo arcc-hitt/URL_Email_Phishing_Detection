@@ -1,20 +1,41 @@
 import os
+import logging
+import signal
 import sys
+from app import app
+from app.config import config
 
-# Set TensorFlow environment variables before importing TensorFlow
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress all TF logs except errors
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Disable GPU
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'false'
+# Configure logging for production
+logging.basicConfig(
+    level=getattr(logging, config.LOG_LEVEL),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('/tmp/app.log') if os.path.exists('/tmp') else logging.NullHandler()
+    ]
+)
 
-# Reduce Python memory usage
-os.environ['PYTHONHASHSEED'] = '0'
+logger = logging.getLogger(__name__)
 
-# Configure TensorFlow before importing app
-from app.tf_config import tf
+# Graceful shutdown handler for Oracle Cloud
+def signal_handler(signum, frame):
+    logger.info(f"Received signal {signum}, shutting down gracefully...")
+    sys.exit(0)
 
-# Import app after TensorFlow configuration
-from app import app, config
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
+
+# For Oracle Cloud Container Instances and other WSGI servers
+application = app
+
+# Log startup information
+logger.info("=== Phishing Detection API Starting ===")
+logger.info(f"Debug mode: {config.DEBUG}")
+logger.info(f"Log level: {config.LOG_LEVEL}")
+logger.info(f"Port: {config.PORT}")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=config.PORT)
+    # For local development
+    port = int(os.environ.get("PORT", config.PORT))
+    logger.info(f"Starting development server on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=config.DEBUG)

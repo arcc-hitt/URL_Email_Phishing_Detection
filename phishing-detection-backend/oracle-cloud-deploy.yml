@@ -1,0 +1,77 @@
+# Oracle Cloud Container Instance Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phishing-api-config
+data:
+  DEBUG: "False"
+  LOG_LEVEL: "INFO"
+  PORT: "8000"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phishing-detection-api
+  labels:
+    app: phishing-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phishing-api
+  template:
+    metadata:
+      labels:
+        app: phishing-api
+    spec:
+      containers:
+      - name: phishing-api
+        image: phishing-detection-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: phishing-api-secrets
+              key: mongodb-uri
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: phishing-api-secrets
+              key: secret-key
+        envFrom:
+        - configMapRef:
+            name: phishing-api-config
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phishing-api-service
+spec:
+  selector:
+    app: phishing-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer

@@ -1,1 +1,1 @@
-web: gunicorn -w 1 -b 0.0.0.0:$PORT wsgi:app --timeout 600 --max-requests 50 --max-requests-jitter 5 --preload --worker-class sync --worker-connections 100 --graceful-timeout 30
+web: gunicorn -w 2 -b 0.0.0.0:$PORT wsgi:application --timeout 600 --max-requests 1000 --max-requests-jitter 100 --preload --log-level info --worker-class sync

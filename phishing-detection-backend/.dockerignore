@@ -1,19 +1,53 @@
+# Python
 __pycache__
 *.pyc
 *.pyo
 *.pyd
 .Python
-env/
-venv/
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Project specific
+*.md
 .env
-*.csv
-notebooks/
-*.ipynb
+.env.*
+test_models.py
+startup.py
+DEPLOYMENT.md
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Git
 .git
 .gitignore
-.pytest_cache/
-.coverage
-htmlcov/
-dist/
-build/
-*.egg-info/

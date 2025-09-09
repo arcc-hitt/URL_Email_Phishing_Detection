@@ -1,67 +1,90 @@
+import os
+import logging
 from flask import Flask
 from flask_cors import CORS
 from pymongo import MongoClient
 from .config import config
 
-app = Flask(__name__)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# Load config
-app.config.from_object(config)
-
-# Configure CORS
-CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "https://url-email-phishing-detection.vercel.app",
-            "http://localhost:4200",
-            "http://localhost:3000"
-        ],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
-
-
-# Initialize MongoDB client
-mongodb_uri = app.config['MONGODB_URI']
-if not mongodb_uri:
-    raise ValueError("MONGODB_URI environment variable is not set")
-
-client = MongoClient(mongodb_uri)
-db = client["phishing_detection_db"]
-
-# Test MongoDB connection
-try:
-    client.admin.command('ismaster')
-    print("MongoDB connection successful")
-except Exception as e:
-    print(f"MongoDB connection failed: {e}")
-
-# Register blueprints
-from .routes import url_analysis, email_analysis
-from .main import bp as logs_bp
-
-app.register_blueprint(email_analysis.bp, url_prefix="/api/email")
-app.register_blueprint(url_analysis.bp, url_prefix="/api/url")
-app.register_blueprint(logs_bp)
-
-# Preload models after app initialization
-def preload_models():
+def create_app():
+    app = Flask(__name__)
+    
+    # Load config
+    app.config.from_object(config)
+    
+    # Configure CORS
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": [
+                "https://url-email-phishing-detection.vercel.app",
+                "http://localhost:4200",
+                "http://localhost:3000"
+            ],
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
+    
+    # Initialize MongoDB client
+    mongodb_uri = app.config['MONGODB_URI']
+    if not mongodb_uri:
+        logger.error("MONGODB_URI environment variable is not set")
+        raise ValueError("MONGODB_URI environment variable is not set")
+    
     try:
-        print("Preloading ML models...")
-        # Import TensorFlow config first
-        from .tf_config import tf
-        from .services.url_service import URLService
-        URLService.preload_models()
-        print("ML models preloaded successfully")
+        client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
+        db = client["phishing_detection_db"]
+        
+        # Test MongoDB connection
+        client.admin.command('ismaster')
+        logger.info("MongoDB connection successful")
+        
+        # Make client and db available to the app
+        app.mongodb_client = client
+        app.mongodb_db = db
+        
     except Exception as e:
-        print(f"Error preloading models: {e}")
-        # Don't raise the error to allow the app to start
-
-# Use with_appcontext instead of deprecated before_first_request
-with app.app_context():
+        logger.error(f"MongoDB connection failed: {e}")
+        raise e
+    
+    # Register blueprints
     try:
-        preload_models()
+        from .routes import url_analysis, email_analysis
+        from .main import bp as logs_bp
+        
+        app.register_blueprint(email_analysis.bp, url_prefix="/api/email")
+        app.register_blueprint(url_analysis.bp, url_prefix="/api/url")
+        app.register_blueprint(logs_bp)
+        
+        logger.info("Blueprints registered successfully")
+        
     except Exception as e:
-        print(f"Failed to preload models during startup: {e}")
-        # Continue anyway - the service can work with partial functionality
+        logger.error(f"Failed to register blueprints: {e}")
+        raise e
+    
+    # Add health check endpoint
+    @app.route('/health')
+    def health_check():
+        return {"status": "healthy", "message": "Phishing Detection API is running"}
+    
+    # Add error handlers
+    @app.errorhandler(404)
+    def not_found(error):
+        return {"error": "Endpoint not found"}, 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        logger.error(f"Internal server error: {error}")
+        return {"error": "Internal server error"}, 500
+    
+    logger.info("Flask app created successfully")
+    return app
+
+# Create the app instance
+app = create_app()
